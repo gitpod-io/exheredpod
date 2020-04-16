@@ -1,0 +1,8 @@
+Title: NoVNC initial implementation
+Author: Jacob Hrbek <kreyren@rixotstudio.cz>
+Content-Type: text/plain
+Posted: 2020-04-16
+News-Item-Format: 1.0
+Display-If-Installed: www-apps/novnc
+
+FIXME: Provide message for the end-users here
