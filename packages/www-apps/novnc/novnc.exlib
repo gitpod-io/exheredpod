@@ -1,0 +1,217 @@
+# shellcheck shell=bash # Paludis does not expect shebang
+
+# Maintainers: Add your notices here
+# Created by Jacob Hrbek <kreyren@rixotstudio.cz> under GPL3 license <https://www.gnu.org/licenses/gpl-3.0.en.html> in 2020/04/06 - 02:27 CET
+
+###! Exlib used to provide a logic for novnc
+###! Requires:
+###! - FIXME
+###! Procedure:
+###! - FIXME
+
+### METADATA ###
+
+# shellcheck disable=SC2034 # Metadata variables for paludis
+ORGANIZATION="novnc"
+# shellcheck disable=SC2034 # Metadata variables for paludis
+SUMMARY="VNC client web application"
+# shellcheck disable=SC2034 # Metadata variables for paludis
+# FIXME-TEST: Add test for 100 chars
+DESCRIPTION="FIXME-DOCS: Add description" # max 100 chars
+# shellcheck disable=SC2034 # Metadata variables for paludis
+HOMEPAGE="VNC client web application"
+# shellcheck disable=SC2034 # Metadata variables for paludis
+LICENCES="novnc [[ note = [ main license ] ]]"
+# FIXME: Add more BUGS_TO references based on options used
+# shellcheck disable=SC2034 # Metadata variables for paludis
+BUGS_TO="kreyren@rixotstudio.cz"
+# shellcheck disable=SC2034 # Metadata variables for paludis
+#UPSTREAM_CHANGELOG="https://... [[ lang = en ]]"
+# POSIX: Arrays are not supported on POSIX sh
+# shellcheck disable=SC2034 # Metadata variables for paludis
+UPSTREAM_DOCUMENTATION=(
+	"https://novnc.com/info.html [[ lang = en description = [ The rustc book ] ]]"
+)
+# POSIX: Arrays are not supported on POSIX sh
+# shellcheck disable=SC2034 # Metadata variables for paludis
+UPSTREAM_RELEASE_NOTES=(
+	"https://github.com/novnc/noVNC/releases [[ lang = en description = [ Upstream release notes on github ] ]]"
+)
+
+### LOGIC ###
+
+# DO_NOT_MERGE: Remove for merge
+DEBUG="yes"
+
+# NOTICE: See https://gitlab.exherbo.org/exherbo/arbor/-/blob/master/exlibs/github.exlib#L19 for backend logic
+# Example URL: https://github.com/novnc/noVNC/archive/v1.1.0.tar.gz
+require github [ user="$ORGANIZATION" tag="$PV" project="novnc" ]
+
+# NOTICE: If providers:rustc is not present then we expect to use binaries
+# Maintainers: All entries should have description to know why is it required
+# shellcheck disable=SC2034 # Metadata variables for paludis
+# DEPENDENCIES=""
+
+# shellcheck disable=SC2034 # Metadata variables for paludis
+REMOTE_IDS="github:$ORGANIZATION/$PN"
+
+#WORK=""
+
+# shellcheck disable=SC2034 # Metadata variables for paludis
+SLOT="0"
+
+# FIXME: Commented out targets are also supported and need implementation
+# FIXME: Embedded is apparently also supported and should be adapted
+# POSIX: Arrays are not supported on POSIX sh
+# shellcheck disable=SC2034 # Metadata variables for paludis
+CROSS_COMPILE_TARGETS=(
+	# GNU - 64
+	"x86_64-pc-linux-gnu"
+	#"x86_64-pc-freebsd-gnu"
+	#"x86_64-pc-hurd-gnu"
+	#"x86_64-pc-redox-gnu"
+	#"x86_64-pc-darwin-gnu"
+	#"x86_64-pc-mingw-gnu"
+	#"x86_64-unknown-linux-gnu"
+	# GNU - 32
+	#"i686-pc-linux-gnu"
+	#"i686-pc-freebsd-gnu"
+	#"i686-pc-hurd-gnu"
+	#"i686-pc-redox-gnu"
+	#"i686-pc-darwin-gnu"
+	#"i686-pc-mingw-gnu"
+	#"i686-unknown-linux-gnu"
+	# MUSL - 64
+	#"x86_64-pc-linux-musl"
+	#"x86_64-pc-freebsd-musl"
+	#"x86_64-pc-hurd-musl"
+	#"x86_64-pc-redox-musl"
+	#"x86_64-pc-darwin-musl"
+	#"x86_64-pc-mingw-musl"
+	#"x86_64-unknown-linux-musl"
+	# MUSL - 32
+	#"i686-pc-linux-musl"
+	#"i686-pc-freebsd-musl"
+	#"i686-pc-hurd-musl"
+	#"i686-pc-redox-musl"
+	#"i686-pc-darwin-musl"
+	#"i686-pc-mingw-musl"
+	#"i686-unknown-linux-musl"
+)
+
+# shellcheck disable=SC2034 # Metadata variables for paludis
+MYOPTIONS="
+	docs [[ description = [ Build target with documentation ] ]]
+"
+
+pkg_pretend() {
+	default
+}
+
+pkg_nofetch() {
+	default
+}
+
+src_fetch_extra() {
+	default
+}
+
+pkg_setup() {
+	default
+}
+
+# This is exported from Zernit project's Exheredrey-0
+src_unpack() {
+	exdebug "Variable ARCHIVES stores following value(s): '$ARCHIVES' in function ${FUNCNAME[0]}"
+
+	# FIXME: Implement logic for non-tar archives
+	# FIXME: This does not allow renaming from DOWNLOADS variable above
+	# Check if there is anything to extract
+	if [ -n "$ARCHIVES" ]; then
+		# Process all archives
+		for archive in $ARCHIVES; do
+			# Continue if the archive is not extracted already
+			if [ ! -d "$WORKBASE/${archive%%.tar.??}" ]; then
+				# Extract the archive if it's present
+				if [ -e "$FETCHEDDIR/$archive" ]; then
+					einfo "Extracting archive '$archive' to WORKBASE as instructed.."r
+					# FIXME: This may fail on older versions of tar -> Supply -z flag accordingly
+					tar xpf "$FETCHEDDIR/$archive" -C "$WORKBASE/${archive%%.tar.??}" || die 1 "Unable to extract archive '$FETCHEDDIR/$archive' to '$WORKBASE'"
+					einfo "Archive '$archive' has been sucessfully extracted instructed WORKBASE"
+				elif [ ! -e "$FETCHEDDIR/$archive" ]; then
+					die 1 "Expected archive '$FETCHEDDIR/$archive' does not exists, unable to extract"
+				else
+					die 256 "Unexpected happend while trying to extract archive '$archive' in ${FUNCNAME[0]}"
+				fi
+			elif [ -d "$WORKBASE/${archive%%.tar.??}" ]; then
+				einfo "Archive '$archive' is already extracted, skipping.."
+			else
+				die 256 "Unexpected happend while processing archive '$archive' in ${FUNCNAME[0]}"
+			fi
+		done
+	elif [ -z "$ARCHIVES" ]; then
+		einfo "Variable '$ARCHIVES' is blank, nothing to extract.."
+	else
+		die 256 "Unexpected happend while processing variable ARCHIVES with value '$ARCHIVES'"
+	fi
+
+	die 1 "Function '${FUNCNAME[0]}' escaped sanitization"
+
+	# default # default is inefficient
+}
+
+# Notice: End-users usually inject their own patches in this phase for example using https://gitlab.exherbo.org/kreyren/marty/-/blob/leonid-x86_64-bedrock-gnu/hooks/ebuild_metadata_pre/user-patches.bash
+src_prepare() {
+	default
+}
+
+src_configure() {
+	default
+}
+
+src_compile() {
+	default
+}
+
+src_test() {
+	default
+}
+
+src_test_expensive() {
+	defaut
+}
+
+src_bench() {
+	default
+}
+
+src_install() {
+	if ! option providers:rustc; then
+		export DESTDIR="$IMAGE"
+		"$WORKBASE/build/bootstrap/debug/bootstrap" install || die 1 "Unable to install target in imagedir using bootstrap"
+	elif option providers:rustc; then
+		die unimplemented
+	else
+		die 256 "Unexpected happend while processing installation of $P"
+	fi
+}
+
+pkg_preinst() {
+	default
+}
+
+pkg_prerm() {
+	default
+}
+
+pkg_postinst() {
+	default
+}
+
+pkg_config() {
+	default
+}
+
+pkg_info() {
+	default
+}
